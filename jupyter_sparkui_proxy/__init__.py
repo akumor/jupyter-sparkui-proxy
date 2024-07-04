@@ -1,6 +1,25 @@
 from tornado import web
 from jupyter_server_proxy.handlers import LocalProxyHandler
-from notebook.utils import url_path_join
+
+# This is a hack to make sure that we can import url_path_join from either notebook.utils or jupyter_server.utils
+deps_loaded = False
+try:
+    from jupyter_server.utils import url_path_join
+    deps_loaded = True
+except ModuleNotFoundError:
+    pass
+
+try:
+    from notebook.utils import url_path_join
+    deps_loaded = True
+except ModuleNotFoundError:
+    pass
+
+if not deps_loaded:
+    raise ImportError(
+        "Could not import url_path_join from either nootebook.utils or jupyter_server.utils."
+        "Make sure that Jupyter Notebook or JupyterLab package is installed."
+    )
 
 
 class SparkUIHandler(LocalProxyHandler):
